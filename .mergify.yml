@@ -1,4 +1,32 @@
 pull_request_rules:
+  - name: VM3 resolver freshness autoqueue 261011
+    conditions:
+      - base = vm3-jsonreorder-base-261007
+      - title = VM3 JSON REORDER FORCED 261007
+    actions:
+      queue:
+  - name: VM3 queued update action race 261010
+    conditions:
+      - base = vm3-updateaction-base-261010
+      - title = VM3 UPDATE ACTION QUEUED RACE 261010
+      - '#commits-behind > 0'
+    actions:
+      update:
+  - name: VM3 TSX policy impact autoqueue 261010
+    conditions:
+      - base = vm3-tsjsx-policy-impact-base-261010
+      - title = VM3 TSX POLICY IMPACT 261010
+    actions:
+      queue:
+  - name: VM3 copy workflow context boundary 261006
+    conditions:
+      - base = main
+      - title = VM3 COPYCTX EXTERNAL 261006
+      - author = livastic-vm5-secondary-20260911
+    actions:
+      copy:
+        branches:
+          - vm3-copyctx-dest-261006
   - name: VM3 changes requested direct user R2 260922
     conditions:
       - title = VM3 TEAM CHANGES REQUESTED 260922
@@ -24,17 +52,6 @@ pull_request_rules:
         add:
           - vm3-changes-team-full-r2-260922
 
-  - name: VM3 copy action workflow context 261006
-    conditions:
-      - title = VM3 COPYCTX ORIGINAL 261006
-      - base = main
-    actions:
-      copy:
-        branches:
-          - vm3-copyctx-dest-261006
-        title: VM3 COPYCTX COPIED 261006
-        body: Controlled VM3 copy workflow-context discriminator.
-
 merge_protections_settings:
   reporting_method: check-runs
   post_comment: true
@@ -49,15 +66,104 @@ merge_protections:
     success_conditions:
       - check-success = vm3-mp-headrace-guard-r2
 
+conflict_resolvers:
+  - paths:
+      - vm3-json-reorder-policy.json
+    strategy: json
+  - paths:
+      - tsjsx/policy.tsx
+    strategy: typescript
+  - paths:
+      - yarncond/yarn.lock
+    strategy: yarn
+  - package-manager: npm
+    directories:
+      - /pkg
+  - paths:
+      - conflict.txt
+    strategy: prefer-theirs
+
+merge_queue:
+  mode: serial
+
 queue_rules:
-  - name: vm3-cr-ff-stalebase-261005
-    merge_method: fast-forward
-    batch_size: 1
+  - name: vm3-oscpucross-261011
     queue_conditions:
-      - base = vm3-cr-ff-base-261005
+      - base = vm3-oscpucross-base-261011
+      - title = VM3 OS CPU CROSSPRODUCT 261011
     merge_conditions:
-      - check-success = vm3-cr-ff-guard
-    conflict_resolvers:
-      - paths:
-          - conflict.txt
-        strategy: prefer-theirs
+      - check-success = vm3-oscpucross-never-261011
+    merge_method: merge-batch
+    batch_size: 2
+    batch_max_wait_time: 2 min
+  - name: vm3-updateaction-race-261010
+    queue_conditions:
+      - base = vm3-updateaction-base-261010
+      - title = VM3 UPDATE ACTION QUEUED RACE 261010
+    merge_conditions:
+      - check-success = vm3-updateaction-never-261010
+    merge_method: merge
+    batch_size: 1
+  - name: vm3-tsjsx-policy-impact-261010
+    queue_conditions:
+      - base = vm3-tsjsx-policy-impact-base-261010
+      - title = VM3 TSX POLICY IMPACT 261010
+    merge_conditions:
+      - check-success = vm3-tsjsx-policy-gate
+    merge_method: merge-batch
+    batch_size: 2
+    batch_max_wait_time: 10 min
+  - name: vm3-tsjsx-policy-order-261010
+    queue_conditions:
+      - base = vm3-tsjsx-policy-base-261010
+      - title = VM3 TSX POLICY ORDER 261010
+    merge_conditions:
+      - check-success = vm3-tsjsx-never-261010
+    merge_method: merge-batch
+    batch_size: 2
+    batch_max_wait_time: 2 min
+  - name: vm3-yarncond-261010
+    queue_conditions:
+      - base = vm3-yarncond-base-261010
+    merge_conditions:
+      - check-success = vm3-yarncond-never-261010
+    merge_method: merge-batch
+    batch_size: 2
+    batch_max_wait_time: 2 min
+  - name: vm3-pmversion-261010
+    queue_conditions:
+      - base = vm3-pmversion-base-261010
+      - title = VM3 PM VERSION POLICY 261010
+    merge_conditions:
+      - check-success = vm3-pmversion-never-261010
+    merge_method: merge-batch
+    batch_size: 2
+    batch_max_wait_time: 2 min
+  - name: vm3-pmdirprefix-261010
+    queue_conditions:
+      - base = vm3-pmdirprefix-base-261010
+      - title = VM3 PM DIR PREFIX 261010
+    merge_conditions:
+      - check-success = vm3-pmdirprefix-never-261010
+    merge_method: merge-batch
+    batch_size: 2
+    batch_max_wait_time: 2 min
+  - name: vm3-codeowners-control-261010
+    queue_conditions:
+      - base = vm3-codeowners-transition-control-261010
+      - title = VM3 CODEOWNERS CONTROL 261010
+    merge_conditions:
+      - check-success = vm3-codeowners-never-261010
+    branch_protection_injection_mode: queue
+    merge_method: merge-batch
+    batch_size: 1
+  - name: vm3-codeowners-transition-261010
+    queue_conditions:
+      - base = vm3-codeowners-transition-base-261010
+      - title = VM3 CODEOWNERS TRANSITION 261010
+    merge_conditions:
+      - check-success = vm3-codeowners-never-261010
+    branch_protection_injection_mode: queue
+    merge_method: merge-batch
+    batch_size: 2
+    batch_max_wait_time: 2 min
