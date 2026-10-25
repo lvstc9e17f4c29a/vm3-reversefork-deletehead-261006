@@ -57,3 +57,7 @@ queue_rules:
       - base = vm3-cr-ff-base-261005
     merge_conditions:
       - check-success = vm3-cr-ff-guard
+    conflict_resolvers:
+      - paths:
+          - conflict.txt
+        strategy: prefer-theirs
